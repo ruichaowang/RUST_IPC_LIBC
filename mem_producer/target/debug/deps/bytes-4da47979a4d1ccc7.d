@@ -1,0 +1,12 @@
+/Users/wangruichao/Work/shared_mem/mem_producer/target/debug/deps/bytes-4da47979a4d1ccc7.rmeta: /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/lib.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/alloc.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/byte_buf.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/byte_str.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/bytes.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/ring.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/rope.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/slice.rs
+
+/Users/wangruichao/Work/shared_mem/mem_producer/target/debug/deps/bytes-4da47979a4d1ccc7.d: /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/lib.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/alloc.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/byte_buf.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/byte_str.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/bytes.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/ring.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/rope.rs /Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/slice.rs
+
+/Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/lib.rs:
+/Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/alloc.rs:
+/Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/byte_buf.rs:
+/Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/byte_str.rs:
+/Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/bytes.rs:
+/Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/ring.rs:
+/Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/rope.rs:
+/Users/wangruichao/.cargo/registry/src/index.crates.io-6f17d22bba15001f/bytes-0.1.2/src/slice.rs:
