@@ -15,7 +15,7 @@ fn main() {
     let mem_size = size_of::<i32>();
     let name = CString::new("/test2.shm").unwrap();
     let c_str_name: &CStr = name.as_c_str();
-    let fd = shm_open(c_str_name, OFlag::O_CREAT | OFlag::O_RDWR, Mode::empty()).unwrap();
+    let fd = shm_open(c_str_name, OFlag::O_CREAT | OFlag::O_RDWR, Mode::S_IRUSR | Mode::S_IWUSR | Mode::S_IRGRP | Mode::S_IWGRP | Mode::S_IROTH | Mode::S_IWOTH).unwrap();
 
     // let _ = ftruncate(fd, mem_size as _);
     unsafe {

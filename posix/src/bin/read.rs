@@ -15,7 +15,7 @@ fn main() {
     let mem_size: usize = size_of::<i32>();
 
     // Open the existing shared memory and get the file descriptor
-    let fd = shm_open(name_c_str, OFlag::O_RDWR, Mode::empty()).expect("shm_open failed");
+    let fd = shm_open(name_c_str, OFlag::O_RDWR, Mode::S_IRUSR | Mode::S_IWUSR | Mode::S_IRGRP | Mode::S_IWGRP | Mode::S_IROTH | Mode::S_IWOTH).expect("shm_open failed");
 
     // Map the shared memory into the address space of this process
     let ptr = unsafe { mmap(null_mut(), mem_size, ProtFlags::PROT_READ, MapFlags::MAP_SHARED, fd, 0).expect("mmap failed") };
