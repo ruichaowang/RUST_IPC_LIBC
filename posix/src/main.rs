@@ -48,7 +48,7 @@ fn main() {
         munmap(ptr, mem_size).unwrap();
     }
 
-    shm_unlink(c_str_name).unwrap();
     sleep(Duration::from_secs(20));
+    shm_unlink(c_str_name).unwrap();
     println!("Close!")
 }

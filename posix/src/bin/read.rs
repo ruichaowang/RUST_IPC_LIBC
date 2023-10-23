@@ -27,6 +27,7 @@ fn main() {
     file.read(&mut buffer).expect("read failed");
     let val = i32::from_ne_bytes(buffer);
     assert_eq!(val, 100);
+    println!("val: {}", val);
 
     // This process finished using this shared memory, so do unmap
     unsafe { munmap(ptr, mem_size).expect("munmap failed") };
