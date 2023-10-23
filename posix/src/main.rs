@@ -1,5 +1,5 @@
-// use nix::fcntl::OFlag;//ftruncate 当前nix 中没有
-use nix::fcntl::{OFlag, ftruncate};
+use nix::fcntl::OFlag;//ftruncate 当前nix 中没有
+// use nix::fcntl::{OFlag, ftruncate};
 use nix::sys::mman::{mmap, munmap, shm_open, shm_unlink, MapFlags, ProtFlags};
 use nix::sys::stat::Mode;
 use std::ffi::{CStr, CString};
@@ -17,10 +17,10 @@ fn main() {
     let c_str_name: &CStr = name.as_c_str();
     let fd = shm_open(c_str_name, OFlag::O_CREAT | OFlag::O_RDWR, Mode::empty()).unwrap();
 
-    let _ = ftruncate(fd, mem_size as _);
-    // unsafe {
-    //     libc::ftruncate(fd, mem_size as _);
-    // }
+    // let _ = ftruncate(fd, mem_size as _);
+    unsafe {
+        libc::ftruncate(fd, mem_size as _);
+    }
 
     let ptr = unsafe {
         mmap(
@@ -49,5 +49,6 @@ fn main() {
     }
 
     shm_unlink(c_str_name).unwrap();
-    sleep(Duration::from_secs(10));
+    sleep(Duration::from_secs(20));
+    println!("Close!")
 }
