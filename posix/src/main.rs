@@ -1,10 +1,10 @@
-use nix::fcntl::OFlag;//ftruncate 当前nix 中没有
-// use nix::fcntl::{OFlag, ftruncate};
-use nix::sys::mman::{mmap, munmap, shm_open, shm_unlink, MapFlags, ProtFlags};
-use nix::sys::stat::Mode;
-use std::ffi::{CStr, CString};
+use libc::{
+    c_char, c_uint, ftruncate, mmap, munmap, shm_open, shm_unlink, MAP_SHARED, O_CREAT, O_RDWR,
+    PROT_READ, PROT_WRITE, S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR,
+};
+use std::ffi::CString;
 use std::fs::File;
-use std::io::{Read};
+use std::io::Read;
 use std::mem::size_of;
 use std::os::unix::prelude::FromRawFd;
 use std::ptr::null_mut;
@@ -14,24 +14,28 @@ use std::time::Duration;
 fn main() {
     let mem_size = size_of::<i32>();
     let name = CString::new("/test2.shm").unwrap();
-    let c_str_name: &CStr = name.as_c_str();
-    let fd = shm_open(c_str_name, OFlag::O_CREAT | OFlag::O_RDWR, Mode::S_IRUSR | Mode::S_IWUSR | Mode::S_IRGRP | Mode::S_IWGRP | Mode::S_IROTH | Mode::S_IWOTH).unwrap();
+    let c_str_name: *const c_char = name.as_ptr();
+    let fd = unsafe {
+        shm_open(
+            c_str_name,
+            O_CREAT | O_RDWR,
+            (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) as c_uint,
+        )
+    };
 
-    // let _ = ftruncate(fd, mem_size as _);
     unsafe {
-        libc::ftruncate(fd, mem_size as _);
+        let _ = ftruncate(fd, mem_size as _);
     }
 
     let ptr = unsafe {
         mmap(
             null_mut(),
             mem_size,
-            ProtFlags::PROT_READ | ProtFlags::PROT_WRITE,
-            MapFlags::MAP_SHARED,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
             fd,
             0,
         )
-        .unwrap()
     };
 
     let file = unsafe { File::from_raw_fd(fd) };
@@ -45,10 +49,10 @@ fn main() {
         let val = i32::from_ne_bytes(buffer);
         assert_eq!(100, val);
 
-        munmap(ptr, mem_size).unwrap();
+        munmap(ptr, mem_size);
     }
 
     sleep(Duration::from_secs(20));
-    shm_unlink(c_str_name).unwrap();
+    unsafe { shm_unlink(c_str_name) };
     println!("Close!")
 }
