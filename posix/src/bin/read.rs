@@ -1,54 +1,43 @@
-// 这是从共享内存中读取数据的代码
-use nix::fcntl::OFlag;
-use nix::sys::mman::{mmap, munmap, shm_open, MapFlags, ProtFlags};
-use nix::sys::stat::Mode;
+use libc::{
+    c_char, c_uint, mmap, munmap, shm_open, O_RDWR, PROT_READ, S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP,
+    S_IWOTH, S_IWUSR,
+};
 use std::ffi::CString;
 use std::fs::File;
 use std::io::Read;
-use std::mem::size_of;
 use std::os::unix::prelude::FromRawFd;
 use std::ptr::null_mut;
 
 fn main() {
     let shared_name = CString::new("/test2.shm").expect("CString::new failed");
-    let name_c_str = shared_name.as_c_str();
-    let mem_size: usize = size_of::<i32>();
+    let mem_size = std::mem::size_of::<i32>();
+    let c_str_name: *const c_char = shared_name.as_ptr();
 
-    // Open the existing shared memory and get the file descriptor
-    let fd = shm_open(
-        name_c_str,
-        OFlag::O_RDWR,
-        Mode::S_IRUSR
-            | Mode::S_IWUSR
-            | Mode::S_IRGRP
-            | Mode::S_IWGRP
-            | Mode::S_IROTH
-            | Mode::S_IWOTH,
-    )
-    .expect("shm_open failed");
-
-    // Map the shared memory into the address space of this process
-    let ptr = unsafe {
-        mmap(
-            null_mut(),
-            mem_size,
-            ProtFlags::PROT_READ,
-            MapFlags::MAP_SHARED,
-            fd,
-            0,
+    let fd = unsafe {
+        shm_open(
+            c_str_name,
+            O_RDWR,
+            (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) as c_uint,
         )
-        .expect("mmap failed")
     };
+    if fd == -1 {
+        panic!("shm_open failed");
+    }
 
-    // Operate on the shared memory
+    let ptr = unsafe { mmap(null_mut(), mem_size, PROT_READ, libc::MAP_SHARED, fd, 0) };
+    if ptr == libc::MAP_FAILED {
+        panic!("mmap failed");
+    }
+
     let mut file = unsafe { File::from_raw_fd(fd) };
 
     let mut buffer = [0; 4];
-    file.read(&mut buffer).expect("read failed");
+    file.read_exact(&mut buffer).expect("read failed");
     let val = i32::from_ne_bytes(buffer);
     assert_eq!(val, 100);
     println!("val: {}", val);
 
-    // This process finished using this shared memory, so do unmap
-    unsafe { munmap(ptr, mem_size).expect("munmap failed") };
+    unsafe {
+        munmap(ptr, mem_size);
+    }
 }
