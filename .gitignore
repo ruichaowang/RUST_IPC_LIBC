@@ -1,2 +1,3 @@
 /system_v_ipc/target
 /posix/target
+/ashmem/target
