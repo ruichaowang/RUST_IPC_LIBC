@@ -1,14 +1,11 @@
 extern crate libc;
-use std::any::Any;
-use std::mem::ManuallyDrop;
 use std::panic;
 use std::ptr;
-use std::result;
-use std::slice;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::thread::sleep;
+use std::time::Duration;
 
-use libc::sleep;
 
 struct Shm {
     id: i32,
@@ -34,13 +31,14 @@ impl Drop for Shm {
 
 fn main() {
     println!("Opening shared memory...");
-    let key: i32 = 2345;
+    
+    let key = 23456;
     let shm_obj = Arc::new(Mutex::new(None));
 
     let shmid: i32;
     let shm: *mut libc::c_void;
     unsafe {
-        shmid = libc::shmget(key, 46, libc::IPC_CREAT | 0644);
+        shmid = libc::shmget(key, 46, libc::IPC_CREAT | 0666);
         if shmid == -1 {
             panic!("shmget failed: {}", std::io::Error::last_os_error());
         }
@@ -68,5 +66,5 @@ fn main() {
     slice.copy_from_slice(&hello_world[..]);
 
     println!("open for 10 secs");
-    unsafe { sleep(10) };
+    sleep(Duration::from_secs(20));
 }

@@ -1,5 +1,5 @@
 [package]
-name = "mem_producer"
+name = "system_v_ipc"
 version = "0.1.0"
 edition = "2021"
 
