@@ -2,8 +2,8 @@ use ndk::shared_memory::SharedMemory;
 use std::thread::sleep;
 use std::{ffi::CString, mem::size_of, os::fd::AsRawFd, time::Duration};
 
+/// this process is for write a value 100 to shared memory
 fn main() {
-    /// this process is for write a value 100 to shared memory
     let mem_size = size_of::<i32>();
     let name = CString::new("/test_shared_mem.shm").unwrap();
     let mem = SharedMemory::create(Some(&name), mem_size).unwrap();
@@ -25,7 +25,7 @@ fn main() {
     // limit access to read only
     let _ = mem.set_prot(libc::PROT_READ);
     println!("write done and wait for 10 sec!");
-    sleep(Duration::from_secs(10));  //only open for 10s
+    sleep(Duration::from_secs(10));
 
     // Existing mappings will retain their protection flags (PROT_WRITE here) after set_prod()
     // unless it is unmapped:
