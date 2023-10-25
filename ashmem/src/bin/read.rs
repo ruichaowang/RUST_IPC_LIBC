@@ -1,23 +1,9 @@
-use ndk::shared_memory::SharedMemory;
-use std::{
-    ffi::CString,
-    fs::File,
-    io::Read,
-    mem::size_of,
-    os::fd::{AsRawFd, FromRawFd},
-};
-
+use std::mem::size_of;
+/// 如果用 SharedMemory::create 创建，即使是同样的名字也读不到，
+/// 直接用fd 和size 去创建会失败，原因是：文件描述符是进程级别的资源，每个进程拥有自己的文件描述符表。因此，两个进程中的同一个文件描述符，可能指向两个完全不同的资源。不同进程间的文件描述符值，除非通过某种方式（如Unix socket的SCM_RIGHTS消息）显式传递，否则它们之间是没有关联的。
 fn main() {
-    let mem_size = std::cmp::max(size_of::<i32>(), b"hello!\0".len());
-    let name = CString::new("/test2.shm").unwrap();
-
-    let shared_mem = SharedMemory::create(Some(&name), mem_size).unwrap();
-    let size = shared_mem.size();
-
-    let fd = shared_mem.as_raw_fd();
-    if fd == -1 {
-        panic!("fd failed");
-    }
+    let fd = 3;
+    let mem_size = size_of::<i32>();
     let ptr = unsafe {
         libc::mmap(
             std::ptr::null_mut(),
@@ -31,12 +17,11 @@ fn main() {
     if ptr == libc::MAP_FAILED {
         panic!("mmap failed");
     }
-    let mut file = unsafe { File::from_raw_fd(shared_mem.as_raw_fd()) };
 
-    let mut buffer = [0; 4];
-    file.read_exact(&mut buffer).expect("read failed");
-    let val = i32::from_ne_bytes(buffer);
-    println!("val: {}", val);
+    // 这里我们直接从内存中读取i32值
+    let val = unsafe { *(ptr as *mut i32) };
+    println!("val = {}", val);
+
     // Clean up the memory mapping
-    unsafe { libc::munmap(ptr, size) };
+    unsafe { libc::munmap(ptr, mem_size) };
 }

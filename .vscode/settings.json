@@ -3,4 +3,9 @@
         "target/": true
     },
     "rust-analyzer.cargo.target": "aarch64-linux-android",
+    "rust-analyzer.linkedProjects": [
+        "./ashmem/Cargo.toml",
+        "./posix/Cargo.toml",
+        "./posix/Cargo.toml"
+    ],
 }
