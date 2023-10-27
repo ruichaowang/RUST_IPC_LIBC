@@ -1,29 +1,35 @@
+use libc::{
+    c_int, c_uint, c_void, iovec, msghdr, sendmsg, CMSG_DATA, CMSG_LEN, SCM_RIGHTS, SOL_SOCKET,
+};
 use std::fs::File;
 use std::os::fd::IntoRawFd;
-use std::os::unix::net::{UnixListener, UnixStream};
 use std::os::unix::io::{AsRawFd, RawFd};
-use libc::{c_int, c_void, msghdr, iovec, sendmsg, recvmsg, c_uint, SOL_SOCKET, SCM_RIGHTS, CMSG_LEN, CMSG_DATA};
-
-
-
+use std::os::unix::net::UnixStream;
 
 fn send_fd(fd: RawFd, stream: &mut UnixStream) -> std::io::Result<()> {
     // 准备发送的消息
+    println!("1");
     let mut iov = iovec {
         iov_base: std::ptr::null_mut(),
         iov_len: 0,
     };
+
+    let cmsg_space = unsafe { libc::CMSG_SPACE(std::mem::size_of::<c_int>() as c_uint) as usize };
+
+    println!("2");
+    let mut buf: [u8; 128] = [0; 128];  // Assuming 128 bytes is large enough to accommodate control message.
     let mut hdr = msghdr {
         msg_name: std::ptr::null_mut(),
         msg_namelen: 0,
         msg_iov: &mut iov,
         msg_iovlen: 1,
-        msg_control: std::ptr::null_mut(),
-        msg_controllen: 0,
+        msg_control: buf.as_mut_ptr() as *mut c_void,
+        msg_controllen: cmsg_space as u32,
         msg_flags: 0,
     };
-    let cmsg_space = unsafe { libc::CMSG_SPACE(std::mem::size_of::<c_int>() as c_uint) as usize };
-    let mut buf = vec![0u8; cmsg_space];
+
+
+    println!("3");
     let cmsg = unsafe { libc::CMSG_FIRSTHDR(&mut hdr) };
     unsafe {
         if !cmsg.is_null() {
@@ -34,11 +40,12 @@ fn send_fd(fd: RawFd, stream: &mut UnixStream) -> std::io::Result<()> {
             std::ptr::write(fd_ptr, fd);
         }
     }
-    hdr.msg_control = buf.as_mut_ptr() as *mut c_void;
-    hdr.msg_controllen = buf.len() as u32;
+
+    println!("4");
 
     // 发送消息
     let ret = unsafe { sendmsg(stream.as_raw_fd(), &hdr, 0) };
+    println!("5");
     if ret < 0 {
         return Err(std::io::Error::last_os_error());
     }
@@ -46,14 +53,13 @@ fn send_fd(fd: RawFd, stream: &mut UnixStream) -> std::io::Result<()> {
     Ok(())
 }
 
-
 fn main() {
     let path = "/tmp/socket.sock";
-    let file = File::open("/Users/wangruichao/Downloads/W01_fake_no_ext.zip").expect("Failed to open file");
+    let file = File::open("/Users/wangruichao/Downloads/W01_fake_no_ext.zip")
+        .expect("Failed to open file");
     let fd = file.into_raw_fd();
     let mut stream = UnixStream::connect(path).expect("failed to connect to socket");
-    // send_fd(fd, &mut stream).expect("failed to send fd");
+    send_fd(fd, &mut stream).expect("failed to send fd");
 }
 
-
-    // stream.write_i32::<LittleEndian>(12).expect("Failed to write integer to stream");
+// stream.write_i32::<LittleEndian>(12).expect("Failed to write integer to stream");

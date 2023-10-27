@@ -1,7 +1,7 @@
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::os::unix::io::{AsRawFd, RawFd};
 use std::path::Path;
-use libc::{c_int, c_void, msghdr, iovec, sendmsg, recvmsg, c_uint, SOL_SOCKET, SCM_RIGHTS, CMSG_LEN, CMSG_DATA};
+use libc::{c_int, c_void, msghdr, iovec, recvmsg};
 
 fn recv_fd(sock: &UnixStream) -> std::io::Result<RawFd> {
     // 接收消息
