@@ -4,26 +4,23 @@ use std::os::unix::io::{AsRawFd, RawFd};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::Path;
 
+///
 fn recv_fd(sock: &UnixStream) -> std::io::Result<RawFd> {
     // 接收消息
-    let mut buf = [0u8; 1024];
-    let mut iov = iovec {
-        iov_base: buf.as_mut_ptr() as *mut c_void,
-        iov_len: buf.len(),
-    };
+    let mut buf = [0u8; 16];
 
     let mut hdr = msghdr {
         msg_name: std::ptr::null_mut(),
         msg_namelen: 0,
-        msg_iov: &mut iov,
-        msg_iovlen: 1,
-        msg_control: std::ptr::null_mut(),
-        msg_controllen: 0,
+        msg_iov: std::ptr::null_mut(),
+        msg_iovlen: 0,
+        msg_control: buf.as_mut_ptr() as *mut c_void,
+        msg_controllen: buf.len(), //as u32
         msg_flags: 0,
     };
 
     let ret = unsafe { recvmsg(sock.as_raw_fd(), &mut hdr, 0) };
-    if ret < 0 {
+    if ret == -1 {
         return Err(std::io::Error::last_os_error());
     }
 
@@ -42,21 +39,16 @@ fn recv_fd(sock: &UnixStream) -> std::io::Result<RawFd> {
     Ok(fd)
 }
 
+
 fn main() {
-    // let path = "/system/bin/socket.sock";
-    let path = "/tmp/socket.sock";
+    let path = "/system/bin/socket.sock";
+    // let path = "/tmp/socket.sock";
     if Path::new(&path).exists() {
         std::fs::remove_file(path).expect("Failed to remove file");
     }
 
     let listener = UnixListener::bind(path).expect("failed to bind socket");
-    let (mut sock, _) = listener.accept().expect("accept error");
-    
-    let number = sock
-        .read_i32::<LittleEndian>()
-        .expect("Failed to read integer from stream");
-    println!("Received number: {}", number);
-
-    // let fd = recv_fd(&sock).expect("Failed to receive fd");
-    // println!("Received fd: {}", fd);
+    let (sock, _) = listener.accept().expect("accept error");
+    let fd = recv_fd(&sock).expect("Failed to receive fd");
+    println!("Received fd: {}", fd);
 }
