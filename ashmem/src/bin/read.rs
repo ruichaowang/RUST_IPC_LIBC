@@ -8,9 +8,9 @@ use std::time::Duration;
 
 #[repr(C)]
 #[derive(Debug)]
-pub struct MyStruct {
-    pub data1: i32,
-    pub data2: f32,
+struct MyComplexStruct {
+    data1: i32,
+    data2: *mut i32,
 }
 
 fn print_waiting() {
@@ -84,8 +84,8 @@ fn main() {
                         //添加你的文件操作代码...
                         is_fd_valid(fd);
 
-                        let mem_size = size_of::<MyStruct>();
-                        let ptr = unsafe {
+                        let mem_size = size_of::<MyComplexStruct>();
+                        let buffer = unsafe {
                             libc::mmap(
                                 std::ptr::null_mut(),
                                 mem_size,
@@ -95,16 +95,21 @@ fn main() {
                                 0,
                             )
                         };
-                        if ptr == libc::MAP_FAILED {
+                        
+                        if buffer == libc::MAP_FAILED {
                             panic!("mmap failed");
                         }
                         
-                        // 这里我们直接从内存中读取MyStruct值
-                        let my_struct = unsafe { &*(ptr as *mut MyStruct) };
-                        println!("shared mem has MyStruct = {:?}", my_struct);
+                        let my_struct = buffer as *mut MyComplexStruct;
                         
+                        let data1 = unsafe { (*my_struct).data1 };
+                        let data2_ptr = unsafe { buffer.add(size_of::<MyComplexStruct>()) as *mut i32 };
+                        let data2 = unsafe { *data2_ptr };
+                        
+                        println!("Value of data1 = {}", data1);
+                        println!("Value of data2 = {}", data2);
                         // Clean up the memory mapping
-                        unsafe { libc::munmap(ptr, mem_size) };
+                        unsafe { libc::munmap(buffer, mem_size) };
 
                         //跳出循环
                         break;

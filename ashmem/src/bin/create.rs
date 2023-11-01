@@ -5,16 +5,16 @@ use std::os::unix::net::UnixStream;
 use std::thread::sleep;
 use std::{ffi::CString, mem::size_of, os::fd::AsRawFd, time::Duration};
 
-use std::mem::{MaybeUninit};
 
 #[repr(C)]
-pub struct MyStruct {
-    pub data1: i32,
-    pub data2: f32,
+struct MyComplexStruct {
+    data1: i32,
+    data2: *mut i32,
 }
 
 fn create_shared_memory_struct() -> std::io::Result<()> {
-    let mem_size = size_of::<MyStruct>();
+    // Obtain the size of the structure + an i32 for storing the value of the pointer
+    let mem_size = size_of::<MyComplexStruct>() + size_of::<i32>();
     let name = CString::new("/test_shared_mem.shm").unwrap();
     let mem = SharedMemory::create(Some(&name), mem_size).unwrap();
     let buffer = unsafe {
@@ -32,14 +32,18 @@ fn create_shared_memory_struct() -> std::io::Result<()> {
         return Err(std::io::Error::last_os_error());
     }
 
-    let my_struct = MyStruct {
-        data1: 100,
-        data2: 2.2,
-    };
+    // Safe to cast as we made sure to allocate enough memory
+    let my_struct = buffer as *mut MyComplexStruct;
 
-    // 安全地将 my_struct 写入 buffer
-    unsafe { *(buffer as *mut MyStruct) = MaybeUninit::new(my_struct).assume_init() }
+    // Compute the offset of the pointer inside the shared memory block
+    let data2 = unsafe { buffer.add(size_of::<MyComplexStruct>()) as *mut i32 };
 
+    // Write values inside the struct
+    unsafe {
+        (*my_struct).data1 = 100;
+        (*my_struct).data2 = data2;
+        *data2 = 200;
+    }
     // limit access to read only
     let _ = mem.set_prot(libc::PROT_READ);
 
