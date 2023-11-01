@@ -1,13 +1,17 @@
-use std::mem::size_of;
 use libc::{c_int, c_void, iovec, msghdr, recvmsg};
+use std::mem::size_of;
 use std::os::unix::io::{AsRawFd, RawFd};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::Path;
 use std::thread;
 use std::time::Duration;
 
-/// 如果用 SharedMemory::create 创建，即使是同样的名字也读不到，
-/// 
+#[repr(C)]
+#[derive(Debug)]
+pub struct MyStruct {
+    pub data1: i32,
+    pub data2: f32,
+}
 
 fn print_waiting() {
     for _ in 1..6 {
@@ -80,7 +84,7 @@ fn main() {
                         //添加你的文件操作代码...
                         is_fd_valid(fd);
 
-                        let mem_size = size_of::<i32>();
+                        let mem_size = size_of::<MyStruct>();
                         let ptr = unsafe {
                             libc::mmap(
                                 std::ptr::null_mut(),
@@ -94,11 +98,11 @@ fn main() {
                         if ptr == libc::MAP_FAILED {
                             panic!("mmap failed");
                         }
-                    
-                        // 这里我们直接从内存中读取i32值
-                        let val = unsafe { *(ptr as *mut i32) };
-                        println!("shared mem has val = {}", val);
-                    
+                        
+                        // 这里我们直接从内存中读取MyStruct值
+                        let my_struct = unsafe { &*(ptr as *mut MyStruct) };
+                        println!("shared mem has MyStruct = {:?}", my_struct);
+                        
                         // Clean up the memory mapping
                         unsafe { libc::munmap(ptr, mem_size) };
 
